@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+	<html lang="pt-br">
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/png" href="https://i.ibb.co/f0PQXY1/NP-removebg-preview.png"/>
+		<title>New Print - Rastreamento</title>
+		<style type="text/css">
+			body { background-color: #F2F2F2;  font-family: Arial, sans-serif; color: #656565;}
+			.container { position: relative; margin: auto; margin-top: 20px; width: 260px; height: 450px; background-color: white;  padding: 20px;  border-radius: 10px;  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);}
+			#logo { width: 45px; height: 35px; margin-left: 0px;}
+			#slogan { width: 140px; height: 40px; margin-left: 25%; }
+			#borda { border-top: 1px solid rgba(32,63,109,0.6); margin-top: 10px; box-shadow: 0px 0.5px 3px rgb(4,131,184);}
+			p {color: #656565; text-align: center;}
+			#pedidos {
+				position: absolute; width: 65px; margin-top: -2px; margin-left: 97.5px; text-align: center;
+				padding: 5px 0px;  font-size: 14px;  margin-bottom: 20px;  border-radius: 5px;  border: 1px solid #ccc;
+			}
+			#rastreio { margin-left: 22px;	margin-top: 46px; }
+			#realizado { margin-top: -270px; margin-left: 82px; text-align: left; }
+			#arte { margin-top: 40px; margin-left: 82px; text-align: left; }
+			#producao { margin-top: 40px; margin-left: 82px; text-align: left; }
+			#envio { margin-top: 40px; margin-left: 82px; text-align: left; }
+			#retirada { margin-top: 40px; margin-left: 82px; text-align: left; display: none; color: #33589B; }
+			#finalizado { margin-top: 40px; margin-left: 82px; text-align: left; }
+		</style>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+		<script language="JavaScript">
+			var mqtt;
+			var reconnectTimeout = 2000;
+			var host = 'broker.mqttdashboard.com';
+			var port = 8000;
+			var status = "";
+
+			function MQTTConnect() {
+				console.log('Conectando ' + host + ' ' + port);
+				mqtt = new Paho.MQTT.Client(host, port, 'NewPrintClient' + parseInt(Math.random() * 1e5));
+				var options = { timeout: 10,
+			                        keepAliveInterval: 10,
+			                        onSuccess: onConnect,
+			                        onFailure: onError
+				};
+				mqtt.onMessageArrived = onMessageArrived;
+				mqtt.onConnectionLost = onError;
+				mqtt.connect(options);
+			}
+
+			function onConnect() {
+				console.log('Conectado');
+
+				url = window.location.href;
+				if (url.indexOf("?status=") > -1) {
+					msg = url.substr(url.indexOf("=")+1, url.length);
+					updateStatus(msg);
+				}
+				mqtt.subscribe("aCshMt/NewPrint/Rastreamento");
+				document.getElementById("pedidos").focus();
+			}
+
+			function onError(message) {
+				console.log('Falha: ' + message.errorCode + ' ' + message.errorMessage);
+				setTimeout(MQTTConnect, reconnectTimeout);
+			}
+
+			function searchStatus() {
+				var pedido = document.getElementById("pedidos").value;
+
+				if (status[pedido-1] >= 0 == false) {
+					if (window.confirm("\nPedido não cadastrado ou Código incorreto.\n\nDeseja falar com um dos nossos atendentes?")) {
+						var link = "https://api.whatsapp.com/send?phone=5598988785999&text=Olá, não consegui rastrear o meu pedido (n° " + pedido + ") pelo site, gostaria de ajuda da equipe da New Print!";
+						window.location.href = link;
+					}
+				}
+
+				if (pedido != "" && status[pedido-1] >=0) {
+					var img = "";
+					var txt = "";
+						switch (status[pedido-1]) {
+							case "1": //Realizado
+								document.getElementById("retirada").style.display = "none";
+								document.getElementById("envio").style.display = "block";
+								document.getElementById("rastreio").src = "https://i.ibb.co/TR1xNFn/e2.jpg";
+								document.getElementById("realizado").style.color = "#33589B";
+								document.getElementById("arte").style.color = "#656565";
+								document.getElementById("producao").style.color = "#656565";
+								document.getElementById("envio").style.color = "#656565";
+								document.getElementById("finalizado").style.color = "#656565";
+								break;
+							case "2": //Arte
+								document.getElementById("retirada").style.display = "none";
+								document.getElementById("envio").style.display = "block";
+								document.getElementById("rastreio").src = "https://i.ibb.co/tYdQz7B/e3.jpg";
+								document.getElementById("realizado").style.color = "#33589B";
+								document.getElementById("arte").style.color = "#33589B";
+								document.getElementById("producao").style.color = "#656565";
+								document.getElementById("envio").style.color = "#656565";
+								document.getElementById("finalizado").style.color = "#656565";
+								break;
+							case "3": //Producao
+								document.getElementById("retirada").style.display = "none";
+								document.getElementById("envio").style.display = "block";
+								document.getElementById("rastreio").src = "https://i.ibb.co/N1zndCx/e4.jpg";
+								document.getElementById("realizado").style.color = "#33589B";
+								document.getElementById("arte").style.color = "#33589B";
+								document.getElementById("producao").style.color = "#33589B";
+								document.getElementById("envio").style.color = "#656565";
+								document.getElementById("finalizado").style.color = "#656565";
+							        break;
+							case "4":  //Envio
+								document.getElementById("retirada").style.display = "none";
+								document.getElementById("envio").style.display = "block";
+								document.getElementById("rastreio").src = "https://i.ibb.co/YBmDggG/e5.jpg";
+								document.getElementById("realizado").style.color = "#33589B";
+								document.getElementById("arte").style.color = "#33589B";
+								document.getElementById("producao").style.color = "#33589B";
+								document.getElementById("envio").style.color = "#33589B";
+								document.getElementById("finalizado").style.color = "#656565";
+							        break;
+							case "5": //Retirada
+								document.getElementById("retirada").style.display = "block";
+								document.getElementById("envio").style.display = "none";
+								document.getElementById("rastreio").src = "https://i.ibb.co/bXvRkSv/r5.jpg";
+								document.getElementById("realizado").style.color = "#33589B";
+								document.getElementById("arte").style.color = "#33589B";
+								document.getElementById("producao").style.color = "#33589B";
+								document.getElementById("envio").style.color = "#656565";
+								document.getElementById("finalizado").style.color = "#656565";
+							        break;
+							case "6": //Finalizado
+								document.getElementById("retirada").style.display = "none";
+								document.getElementById("envio").style.display = "block";
+								document.getElementById("rastreio").src = "https://i.ibb.co/vsfvLnd/e6.jpg";
+								document.getElementById("realizado").style.color = "#33589B";
+								document.getElementById("arte").style.color = "#33589B";
+								document.getElementById("producao").style.color = "#33589B";
+								document.getElementById("envio").style.color = "#33589B";
+								document.getElementById("finalizado").style.color = "#33589B";
+							        break;
+						}
+						document.getElementById("pedidos").focus();
+						document.getElementById("pedidos").select();
+				}
+			}
+
+			function updateStatus(s) {
+				var message = new Paho.MQTT.Message(s);
+				message.destinationName = "aCshMt/NewPrint/Rastreamento";
+				message.retained = true;
+				mqtt.send(message);	
+			}
+
+
+
+			function onMessageArrived(msg) {
+				if (msg.destinationName == "aCshMt/NewPrint/Rastreamento") {
+					status = msg.payloadString
+					console.log(status);
+				}
+			}
+
+
+			function teste(s) {
+				var message = new Paho.MQTT.Message(s);
+				message.destinationName = "aCshMt/NewPrint/Rastreamento";
+				message.retained = true;
+				mqtt.send(message);	
+			}
+		</script>
+	</head>
+	<body onload="MQTTConnect()">
+	    <div class="container">
+
+		<image id="logo" src="https://i.ibb.co/f0PQXY1/NP-removebg-preview.png" alt="Logo">
+		<image id="slogan" src="https://i.ibb.co/zV4LB98/new.png" alt="New Print, gerando boa impressões!"> 
+
+		<div id="borda"></div>
+		<p> Selecione o seu Código de Rastreio: </p>
+		
+	        <input id="pedidos" type="text" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" name="order-number" onchange="searchStatus()">
+		
+		<image id="rastreio" src="https://i.ibb.co/nCKrBRM/e1.jpg" alt="Logo">
+
+		<p id="realizado">Pedido Realizado</p>
+		<p id="arte">Confeccionando Arte</p>
+		<p id="producao">Em produção</p>
+		<p id="envio">Em processo de Envio</p>
+		<p id="retirada">Aguardando Retirada</p>
+		<p id="finalizado">Pedido Finalizado</p>
+	    </div>
+	</body>
+</html>

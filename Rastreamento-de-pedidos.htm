@@ -36,7 +36,7 @@
 			var status = "";
 
 			function MQTTConnect() {
-				console.log("v.3");
+				console.log("v.4");
 				console.log('Conectando ' + host + ' ' + port);
 				mqtt = new Paho.MQTT.Client(host, port, 'NewPrintClient' + parseInt(Math.random() * 1e5));
 				var options = { timeout: 10,
